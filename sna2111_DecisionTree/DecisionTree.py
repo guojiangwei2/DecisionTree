@@ -18,8 +18,8 @@ def entropy(attributes, data, targetAttr):
     # Calculate the frequency of each of the values in the target attr
     valLst = [item[idx] for item in data]
     valFreq = dict([[k, valLst.count(k)] for k in set(valLst)])
-    dataEntropy = 0.0
     # Calculate the entropy of the data for the target attr
+    dataEntropy = 0.0
     for freq in valFreq.values():
         dataEntropy += (-float(freq)/len(data)) * math.log(float(freq)/len(data), 2)
     return dataEntropy
@@ -60,20 +60,19 @@ def getValues(data, attributes, attr):
     values = list(set([item[idx] for item in data]))
 
 
+# get the subset of the target node
 def getExamples(data, attributes, best, val):
-    examples = [[]]
-    index = attributes.index(best)
-    for entry in data:
-        # find entries with the give value
-        if (entry[index] == val):
-            newEntry = []
-            # add value if it is not in best column
-            for i in range(0,len(entry)):
-                if(i != index):
-                    newEntry.append(entry[i])
-            examples.append(newEntry)
-    examples.remove([])
+    """
+    find the subset that the best attribute equals to val,
+    subset is a list of item that exclude the split value
+    """
+    idx = attributes.index(best)
+    # rm_val_by_idx: remove the value by index and return the remaing value
+    # lst = [1,2,3,4]; idx = -1; rm_val_by_idx(lst, idx) # return [1, 2, 3]
+    rm_val_by_idx = lambda val, idx: val.pop(idx) and val
+    examples = [rm_val_by_idx(item, i) for item in data if item[i] == val]
     return examples
+
 
 def makeTree(data, attributes, target, recursion):
     recursion += 1
@@ -112,4 +111,3 @@ def makeTree(data, attributes, target, recursion):
             tree[best][val] = subtree
     
     return tree
-
