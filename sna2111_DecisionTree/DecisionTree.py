@@ -1,115 +1,73 @@
 import math
 
-#find item in a list
-def find(item, list):
-    for i in list:
-        if item(i): 
-            return True
-        else:
-            return False
 
-#find most common value for an attribute
+# find most common value for an attribute
+# here, data is a list, each item is a list represent an observation,
+# attributes is the column name, target is the target column name to calculate
 def majority(attributes, data, target):
-    #find target attribute
-    valFreq = {}
-    #find target in data
-    index = attributes.index(target)
-    #calculate frequency of values in target attr
-    for tuple in data:
-        if (valFreq.has_key(tuple[index])):
-            valFreq[tuple[index]] += 1 
-        else:
-            valFreq[tuple[index]] = 1
-    max = 0
-    major = ""
-    for key in valFreq.keys():
-        if valFreq[key]>max:
-            max = valFreq[key]
-            major = key
-    return major
+    idx = attributes.index(target)
+    lst = [item[idx] for item in data]
+    sorted_lst = sorted([[lst.count(k), k] for k in set(lst)], reverse=True)
+    return sorted_lst[0][1]
 
-#Calculates the entropy of the given data set for the target attr
+
+# Calculates the entropy of the given data set for the target attr
 def entropy(attributes, data, targetAttr):
-
-    valFreq = {}
-    dataEntropy = 0.0
-    
-    #find index of the target attribute
-    i = 0
-    for entry in attributes:
-        if (targetAttr == entry):
-            break
-        ++i
-    
+    # find index of the target attribute
+    idx = attributes.index(targetAttr)
     # Calculate the frequency of each of the values in the target attr
-    for entry in data:
-        if (valFreq.has_key(entry[i])):
-            valFreq[entry[i]] += 1.0
-        else:
-            valFreq[entry[i]]  = 1.0
-
+    valLst = [item[idx] for item in data]
+    valFreq = dict([[k, valLst.count(k)] for k in set(valLst)])
+    dataEntropy = 0.0
     # Calculate the entropy of the data for the target attr
     for freq in valFreq.values():
-        dataEntropy += (-freq/len(data)) * math.log(freq/len(data), 2) 
-        
+        dataEntropy += (-float(freq)/len(data)) * math.log(float(freq)/len(data), 2)
     return dataEntropy
+
 
 def gain(attributes, data, attr, targetAttr):
     """
     Calculates the information gain (reduction in entropy) that would
     result by splitting the data on the chosen attribute (attr).
     """
-    valFreq = {}
-    subsetEntropy = 0.0
-    
-    #find index of the attribute
-    i = attributes.index(attr)
-
+    # find index of the attribute
+    idx = attributes.index(attr)
     # Calculate the frequency of each of the values in the target attribute
-    for entry in data:
-        if (valFreq.has_key(entry[i])):
-            valFreq[entry[i]] += 1.0
-        else:
-            valFreq[entry[i]]  = 1.0
+    valLst = [item[idx] for item in data]
+    valFreq = dict([[k, valLst.count(k)] for k in set(valLst)])
     # Calculate the sum of the entropy for each subset of records weighted
     # by their probability of occuring in the training set.
+    subsetEntropy = 0.0
     for val in valFreq.keys():
-        valProb        = valFreq[val] / sum(valFreq.values())
-        dataSubset     = [entry for entry in data if entry[i] == val]
+        valProb = round(valFreq[val]) / sum(valFreq.values())
+        dataSubset = [entry for entry in data if entry[i] == val]
         subsetEntropy += valProb * entropy(attributes, dataSubset, targetAttr)
-
     # Subtract the entropy of the chosen attribute from the entropy of the
     # whole data set with respect to the target attribute (and return it)
     return (entropy(attributes, data, targetAttr) - subsetEntropy)
 
-#choose best attibute 
-def chooseAttr(data, attributes, target):
-    best = attributes[0]
-    maxGain = 0;
-    for attr in attributes:
-        newGain = gain(attributes, data, attr, target) 
-        if newGain>maxGain:
-            maxGain = newGain
-            best = attr
-    return best
 
-#get values in the column of the given attribute 
+# choose best attibute
+def chooseAttr(data, attributes, target):
+    res = sorted([[gain(attributes, data, attr, target), attr]
+                  for attr in attributes], reverse=True)
+    return res[0][1]
+
+
+# get values in the column of the given attribute
 def getValues(data, attributes, attr):
-    index = attributes.index(attr)
-    values = []
-    for entry in data:
-        if entry[index] not in values:
-            values.append(entry[index])
-    return values
+    idx = attributes.index(attr)
+    values = list(set([item[idx] for item in data]))
+
 
 def getExamples(data, attributes, best, val):
     examples = [[]]
     index = attributes.index(best)
     for entry in data:
-        #find entries with the give value
+        # find entries with the give value
         if (entry[index] == val):
             newEntry = []
-            #add value if it is not in best column
+            # add value if it is not in best column
             for i in range(0,len(entry)):
                 if(i != index):
                     newEntry.append(entry[i])
