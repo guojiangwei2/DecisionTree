@@ -1,4 +1,8 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
 import DecisionTree
+
 
 def main():
     #Insert input file
