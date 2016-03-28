@@ -58,6 +58,7 @@ def chooseAttr(data, attributes, target):
 def getValues(data, attributes, attr):
     idx = attributes.index(attr)
     values = list(set([item[idx] for item in data]))
+    return values
 
 
 # get the subset of the target node
@@ -76,11 +77,12 @@ def getExamples(data, attributes, best, val):
 
 def makeTree(data, attributes, target, recursion):
     recursion += 1
-    #Returns a new decision tree based on the examples given.
+    # Returns a new decision tree based on the examples given.
+    # slice operator completely copy shallow list structures
     data = data[:]
-    vals = [record[attributes.index(target)] for record in data]
+    idx = attributes.index(target)
+    vals = [record[idx] for record in data]
     default = majority(attributes, data, target)
-
     # If the dataset is empty or the attributes list is empty, return the
     # default value. When checking the attributes list for emptiness, we
     # need to subtract 1 to account for the target attribute.
@@ -88,7 +90,7 @@ def makeTree(data, attributes, target, recursion):
         return default
     # If all the records in the dataset have the same classification,
     # return that classification.
-    elif vals.count(vals[0]) == len(vals):
+    elif len(set(vals)) == 1:
         return vals[0]
     else:
         # Choose the next best attribute to best classify our data
@@ -96,7 +98,6 @@ def makeTree(data, attributes, target, recursion):
         # Create a new decision tree/node with the best attribute and an empty
         # dictionary object--we'll fill that up next.
         tree = {best:{}}
-    
         # Create a new decision tree/sub-node for each of the values in the
         # best attribute field
         for val in getValues(data, attributes, best):
@@ -105,9 +106,7 @@ def makeTree(data, attributes, target, recursion):
             newAttr = attributes[:]
             newAttr.remove(best)
             subtree = makeTree(examples, newAttr, target, recursion)
-    
             # Add the new subtree to the empty dictionary object in our new
             # tree/node we just created.
             tree[best][val] = subtree
-    
     return tree
